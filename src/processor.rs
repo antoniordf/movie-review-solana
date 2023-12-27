@@ -1,3 +1,4 @@
+use crate::error::ReviewError;
 use crate::instruction::MovieInstruction;
 use crate::state::MovieAccountState;
 use borsh::BorshSerialize;
@@ -47,10 +48,35 @@ pub fn add_movie_review(
     let pda_account = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
+    // Signer check
+    if !initializer.is_signer {
+        msg!("Missing required signature");
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
     let (pda, bump_seed) = Pubkey::find_program_address(
         &[initializer.key.as_ref(), title.as_bytes().as_ref()],
         program_id,
     );
+
+    // PDA check
+    if pda != *pda_account.key {
+        msg!("Invalid seeds for PDA");
+        return Err(ReviewError::InvalidPDA.into());
+    }
+
+    // rating check
+    if rating > 5 || rating < 1 {
+        msg!("Rating cannot be higher than 5");
+        return Err(ReviewError::InvalidRating.into());
+    }
+
+    // length check
+    let total_len: usize = 1 + 1 + (4 + title.len()) + (4 + description.len());
+    if total_len > 1000 {
+        msg!("Data length is larger than 1000 bytes");
+        return Err(ReviewError::InvalidDataLength.into());
+    }
 
     let account_len = 1000;
 
