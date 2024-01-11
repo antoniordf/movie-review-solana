@@ -1,6 +1,6 @@
 use crate::error::ReviewError;
 use crate::instruction::MovieInstruction;
-use crate::state::MovieAccountState;
+use crate::state::{MovieAccountState, MovieComment, MovieCommentCounter};
 use borsh::BorshSerialize;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -32,6 +32,7 @@ pub fn process_instruction(
             rating,
             description,
         } => update_movie_review(program_id, accounts, title, rating, description),
+        MovieInstruction::AddComment { comment } => add_comment(program_id, accounts, comment),
     }
 }
 
@@ -171,7 +172,7 @@ pub fn update_movie_review(
         return Err(ReviewError::InvalidPDA.into());
     }
 
-    if !account_data.is_initialized() {
+    if !account_data.is_initialized {
         msg!("Account is not initialized");
         return Err(ReviewError::UninitializedAccount.into());
     }
