@@ -9,3 +9,5 @@ edition = "2021"
 solana-program = "1.17.12"
 borsh = { version = "1.3.0", features = ["derive"] }
 thiserror = "1.0.52"
+spl-token = { version="~3.2.0", features = [ "no-entrypoint" ] }
+spl-associated-token-account = { version="=1.0.5", features = [ "no-entrypoint" ] }
